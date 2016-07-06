@@ -4,6 +4,8 @@ module BinaryTreeLevels where
 
 import qualified Data.Sequence as SQ
 import           Data.Sequence (Seq, (|>), ViewL(..))
+import qualified Data.Map.Strict as Map
+import           Data.Map.Strict (Map)
 
 data Bin a = Node a (Bin a) (Bin a) | Empty deriving Show
 
@@ -13,21 +15,23 @@ singleton a = Node a Empty Empty
 empty :: Bin a
 empty = Empty
 
-levelOrder :: Bin a -> [a]
-levelOrder t = reverse $ go (SQ.singleton t) []
+levelOrderToLists :: Bin a -> Map Int [a]
+levelOrderToLists t = go (SQ.singleton (0,t)) Map.empty
   where
     -- If the queue is empty, we are done.
     go (SQ.viewl -> SQ.EmptyL) result = result
     
     -- Otherwise, continue.
-    go (SQ.viewl -> x :< queue) result = case x of
+    go (SQ.viewl -> (level, x) :< queue) result = case x of
       
       -- If the node is empty, ignore it and keep going.
       Empty      -> go queue result
 
       -- Append the node's children to the queue and combine this
       -- node's value with the result.
-      Node a l r -> go (queue |> l |> r) (a : result)
+      Node a l r -> let queue'  = queue |> (level + 1, l) |> (level + 1, r)
+                        result' = Map.insertWith (++) level [a] result
+                    in go queue' result'
 
 testTree2 :: Bin Int
 testTree2 = Node 6
@@ -36,5 +40,5 @@ testTree2 = Node 6
 
 main :: IO ()
 main = do
-  putStrLn $ show $ levelOrder testTree2
+  putStrLn $ show $ levelOrderToLists testTree2
   

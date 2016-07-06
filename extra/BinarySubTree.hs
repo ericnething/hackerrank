@@ -25,11 +25,10 @@ singleton :: a -> Bin a
 singleton a = Node a Empty Empty
 
 isSubTreeOf :: Eq a => Bin a -> Bin a -> Bool
-isSubTreeOf t1 t2 = or $ go t1 t2
+isSubTreeOf t1 t2 = or $ go t2
   where
-    go :: Eq a => Bin a -> Bin a -> [Bool]
-    go t1 Empty           = []
-    go t1 t2@(Node a l r) = [t1 `isEqual` t2] ++ go t1 l ++ go t1 r
+    go Empty           = []
+    go t2@(Node a l r) = [t1 `isEqual` t2] ++ go l ++ go r
 
 isEqual :: Eq a => Bin a -> Bin a -> Bool
 isEqual = go
